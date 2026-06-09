@@ -1,0 +1,102 @@
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject NavigationManager Nav
+@inject NotificationService Notifications
+
+<div class="app-shell">
+
+    <!-- ── Side Navigation ─────────────────────── -->
+    <nav class="nav-drawer-inner" style="width:240px;flex-shrink:0;">
+        <div class="nav-brand">
+            <div class="brand-icon">🎫</div>
+            <div>
+                <div class="brand-text">Service Desk</div>
+                <div class="brand-sub">Mini · v1.0</div>
+            </div>
+        </div>
+
+        <div class="nav-items">
+            <button class="nav-link @(IsActive("/") ? "active" : "")"
+                    @onclick='() => Nav.NavigateTo("/")'>
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                </svg>
+                Dashboard
+            </button>
+
+            <button class="nav-link @(IsActive("/tickets") ? "active" : "")"
+                    @onclick='() => Nav.NavigateTo("/tickets")'>
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M22 10V6c0-1.11-.9-2-2-2H4c-1.1 0-2 .89-2 2v4c1.1 0 2 .9 2 2s-.9 2-2 2v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-4c-1.1 0-2-.9-2-2s.9-2 2-2zm-2-1.46c-1.19.69-2 1.99-2 3.46s.81 2.77 2 3.46V18H4v-2.54c1.19-.69 2-1.99 2-3.46 0-1.48-.8-2.77-2-3.46V6h16v2.54z"/>
+                </svg>
+                Tickets
+            </button>
+        </div>
+
+        <div style="padding:12px 16px;font-size:11px;color:rgba(255,255,255,0.35);border-top:1px solid rgba(255,255,255,0.08);">
+            © 2026 Service Desk Mini
+        </div>
+    </nav>
+
+    <!-- ── Main Area ───────────────────────────── -->
+    <div class="main-area">
+
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--sd-primary)">
+                <path d="M22 10V6c0-1.11-.9-2-2-2H4c-1.1 0-2 .89-2 2v4c1.1 0 2 .9 2 2s-.9 2-2 2v4c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-4c-1.1 0-2-.9-2-2s.9-2 2-2z"/>
+            </svg>
+            <span class="top-bar-title">Service Desk Mini</span>
+            <span class="top-bar-spacer"></span>
+            <IgbButton Variant="ButtonVariant.Flat"
+                       @onclick='() => Nav.NavigateTo("/tickets")'
+                       style="--ig-size:var(--ig-size-small)">
+                + New Ticket
+            </IgbButton>
+        </div>
+
+        <!-- Page content -->
+        <div class="page-scroll">
+            @Body
+        </div>
+    </div>
+</div>
+
+<!-- Global Snackbar -->
+<IgbSnackbar @ref="_snackbar"
+             DisplayTime="3500"
+             data-type="@_snackType">
+    @_snackMessage
+</IgbSnackbar>
+
+@code {
+    private IgbSnackbar _snackbar = default!;
+    private string _snackMessage = "";
+    private string _snackType = "info";
+
+    protected override void OnInitialized()
+    {
+        Notifications.OnShow += HandleToast;
+    }
+
+    private async void HandleToast(ToastMessage msg)
+    {
+        _snackMessage = msg.Text;
+        _snackType    = msg.Type.ToString().ToLowerInvariant();
+        await InvokeAsync(StateHasChanged);
+        if (_snackbar != null)
+            await _snackbar.ShowAsync();
+    }
+
+    private bool IsActive(string path)
+    {
+        var current = Nav.ToBaseRelativePath(Nav.Uri);
+        if (path == "/") return current == "" || current == "/";
+        return current.StartsWith(path.TrimStart('/'));
+    }
+
+    public void Dispose()
+    {
+        Notifications.OnShow -= HandleToast;
+    }
+}

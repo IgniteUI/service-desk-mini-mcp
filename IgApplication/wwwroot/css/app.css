@@ -1,0 +1,544 @@
+/* ================================================
+   Service Desk Mini – Custom Theme
+   Primary: Deep Navy/Indigo  |  Accent: Electric Cyan
+   ================================================ */
+
+/* ── Ignite UI Palette Overrides ────────────────── */
+:root {
+  --ig-wcag-a: 0.31;
+  --ig-wcag-aa: 0.185;
+  --ig-wcag-aaa: 0.178;
+  --ig-contrast-level: var(--ig-wcag-aa);
+  --y: clamp(0, (y / var(--ig-contrast-level) - 1) * -infinity, 1);
+  --y-contrast: xyz-d65 var(--y) var(--y) var(--y);
+
+  /* Primary – deep indigo/navy */
+  --ig-primary-50:  #e8edf7;
+  --ig-primary-100: #c5d0ea;
+  --ig-primary-200: #9fb0db;
+  --ig-primary-300: #7890cc;
+  --ig-primary-400: #5a75bf;
+  --ig-primary-500: #1e3a8a;
+  --ig-primary-600: #1a3278;
+  --ig-primary-700: #152966;
+  --ig-primary-800: #102055;
+  --ig-primary-900: #0a1540;
+  --ig-primary-A100: #9db8ff;
+  --ig-primary-A200: #6f96ff;
+  --ig-primary-A400: #3d6fff;
+  --ig-primary-A700: #2356ff;
+
+  /* Secondary – electric cyan */
+  --ig-secondary-500: #0ea5e9;
+  --ig-secondary-50:  hsl(from var(--ig-secondary-500) h calc(s * 1.23) calc(l * 1.78));
+  --ig-secondary-100: hsl(from var(--ig-secondary-500) h calc(s * 0.8)  calc(l * 1.66));
+  --ig-secondary-200: hsl(from var(--ig-secondary-500) h calc(s * 0.64) calc(l * 1.43));
+  --ig-secondary-300: hsl(from var(--ig-secondary-500) h calc(s * 0.73) calc(l * 1.19));
+  --ig-secondary-400: hsl(from var(--ig-secondary-500) h calc(s * 0.875) calc(l * 1.08));
+  --ig-secondary-600: hsl(from var(--ig-secondary-500) h calc(s * 1.26) calc(l * 0.89));
+  --ig-secondary-700: hsl(from var(--ig-secondary-500) h calc(s * 1.26) calc(l * 0.81));
+  --ig-secondary-800: hsl(from var(--ig-secondary-500) h calc(s * 1.26) calc(l * 0.73));
+  --ig-secondary-900: hsl(from var(--ig-secondary-500) h calc(s * 1.26) calc(l * 0.64));
+
+  /* Surface */
+  --ig-surface-500: #f0f4f8;
+
+  /* App-level tokens */
+  --sd-bg:           #f0f4f8;
+  --sd-surface:      #ffffff;
+  --sd-primary:      #1e3a8a;
+  --sd-accent:       #0ea5e9;
+  --sd-nav-bg:       #0f1f4d;
+  --sd-nav-text:     rgba(255,255,255,0.87);
+  --sd-nav-hover:    rgba(14,165,233,0.15);
+  --sd-nav-active:   rgba(14,165,233,0.28);
+  --sd-border:       #dde3ed;
+  --sd-shadow:       0 2px 12px rgba(30,58,138,0.10);
+  --sd-shadow-lg:    0 4px 24px rgba(30,58,138,0.14);
+  --sd-radius:       10px;
+  --sd-radius-sm:    6px;
+
+  /* Priority colors */
+  --sd-critical:    #dc2626;
+  --sd-critical-bg: #fef2f2;
+  --sd-high:        #ea580c;
+  --sd-high-bg:     #fff7ed;
+  --sd-medium:      #d97706;
+  --sd-medium-bg:   #fffbeb;
+  --sd-low:         #16a34a;
+  --sd-low-bg:      #f0fdf4;
+
+  /* Status colors */
+  --sd-new:         #6366f1;
+  --sd-new-bg:      #eef2ff;
+  --sd-inprogress:  #0ea5e9;
+  --sd-inprogress-bg: #f0f9ff;
+  --sd-waiting:     #d97706;
+  --sd-waiting-bg:  #fffbeb;
+  --sd-resolved:    #16a34a;
+  --sd-resolved-bg: #f0fdf4;
+  --sd-closed:      #6b7280;
+  --sd-closed-bg:   #f9fafb;
+
+  /* Error */
+  --sd-error:       #dc2626;
+
+  --ig-size: var(--ig-size-medium);
+  --ig-spacing: 1;
+}
+
+/* ── Base Reset ─────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--sd-bg);
+  color: #1e293b;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ── App Shell ──────────────────────────────────── */
+.app-shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Nav Drawer ─────────────────────────────────── */
+igc-nav-drawer {
+  --ig-nav-drawer-size: 240px;
+}
+
+.nav-drawer-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--sd-nav-bg);
+  color: var(--sd-nav-text);
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+}
+
+.nav-brand .brand-icon {
+  width: 32px; height: 32px;
+  background: var(--sd-accent);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.nav-brand .brand-text {
+  font-weight: 700;
+  font-size: 15px;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.nav-brand .brand-sub {
+  font-size: 10px;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.nav-items {
+  flex: 1;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--sd-radius-sm);
+  cursor: pointer;
+  color: var(--sd-nav-text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+
+.nav-link:hover {
+  background: var(--sd-nav-hover);
+  color: #fff;
+}
+
+.nav-link.active {
+  background: var(--sd-nav-active);
+  color: var(--sd-accent);
+  font-weight: 600;
+}
+
+.nav-link svg {
+  width: 18px; height: 18px;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
+.nav-link.active svg {
+  opacity: 1;
+  color: var(--sd-accent);
+}
+
+/* ── Main Content Area ──────────────────────────── */
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ── Top Bar ────────────────────────────────────── */
+.top-bar {
+  height: 56px;
+  background: var(--sd-surface);
+  border-bottom: 1px solid var(--sd-border);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  box-shadow: 0 1px 4px rgba(30,58,138,0.06);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.top-bar-title {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--sd-primary);
+  margin-left: 4px;
+}
+
+.top-bar-spacer { flex: 1; }
+
+/* ── Page Scroll Container ──────────────────────── */
+.page-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+/* ── Page Header ────────────────────────────────── */
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--sd-primary);
+  line-height: 1.2;
+}
+
+.page-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+/* ── KPI Cards ──────────────────────────────────── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.kpi-card {
+  background: var(--sd-surface);
+  border-radius: var(--sd-radius);
+  padding: 20px;
+  box-shadow: var(--sd-shadow);
+  border: 1px solid var(--sd-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--kpi-color, var(--sd-accent));
+}
+
+.kpi-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #64748b;
+}
+
+.kpi-value {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--sd-primary);
+  line-height: 1;
+}
+
+.kpi-sub {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.kpi-icon {
+  position: absolute;
+  right: 16px; top: 16px;
+  font-size: 28px;
+  opacity: 0.10;
+}
+
+/* ── Charts Section ─────────────────────────────── */
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.chart-card {
+  background: var(--sd-surface);
+  border-radius: var(--sd-radius);
+  padding: 20px;
+  box-shadow: var(--sd-shadow);
+  border: 1px solid var(--sd-border);
+}
+
+.chart-card h3 {
+  margin: 0 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sd-primary);
+}
+
+/* ── Data Sections ──────────────────────────────── */
+.data-row {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.data-card {
+  background: var(--sd-surface);
+  border-radius: var(--sd-radius);
+  padding: 20px;
+  box-shadow: var(--sd-shadow);
+  border: 1px solid var(--sd-border);
+}
+
+.data-card h3 {
+  margin: 0 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sd-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Needs Attention Section ────────────────────── */
+.attention-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.attention-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--sd-radius-sm);
+  background: #fef9f0;
+  border: 1px solid #fed7aa;
+}
+
+.attention-item.critical {
+  background: var(--sd-critical-bg);
+  border-color: #fca5a5;
+}
+
+.attention-item .item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.attention-item .item-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.attention-item .item-meta {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* ── Status & Priority Badges ───────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+/* Priority */
+.badge-critical { background: var(--sd-critical-bg); color: var(--sd-critical); }
+.badge-high     { background: var(--sd-high-bg);     color: var(--sd-high); }
+.badge-medium   { background: var(--sd-medium-bg);   color: var(--sd-medium); }
+.badge-low      { background: var(--sd-low-bg);      color: var(--sd-low); }
+
+/* Status */
+.badge-new        { background: var(--sd-new-bg);        color: var(--sd-new); }
+.badge-inprogress { background: var(--sd-inprogress-bg); color: var(--sd-inprogress); }
+.badge-waiting    { background: var(--sd-waiting-bg);    color: var(--sd-waiting); }
+.badge-resolved   { background: var(--sd-resolved-bg);   color: var(--sd-resolved); }
+.badge-closed     { background: var(--sd-closed-bg);     color: var(--sd-closed); }
+
+/* ── Grid Toolbar ───────────────────────────────── */
+.grid-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.grid-toolbar igc-input  { min-width: 220px; }
+.grid-toolbar igc-select { min-width: 140px; }
+
+/* ── Empty State ────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: #94a3b8;
+}
+
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; margin: 0; }
+
+/* ── Loading State ──────────────────────────────── */
+.loading-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  gap: 12px;
+  color: var(--sd-accent);
+  font-size: 14px;
+}
+
+/* ── Snackbar Variants ──────────────────────────── */
+igc-snackbar[data-type="success"]::part(base) { background: #1a7a4a; }
+igc-snackbar[data-type="error"]::part(base)   { background: #c53030; }
+igc-snackbar[data-type="warning"]::part(base) { background: #b45309; }
+
+/* ── Dialog ─────────────────────────────────────── */
+igc-dialog::part(base) { max-width: 600px; width: 90vw; }
+
+/* ── Form Layout ────────────────────────────────── */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-grid .form-full { grid-column: 1 / -1; }
+
+.form-field { display: flex; flex-direction: column; gap: 4px; }
+
+.field-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 2px;
+}
+
+.field-error {
+  font-size: 11px;
+  color: var(--sd-error);
+  margin-top: 2px;
+}
+
+/* ── Ticket Grid Overrides ──────────────────────── */
+igc-grid {
+  --ig-grid-filtering-row-background: var(--ig-surface-500);
+}
+
+.ticket-id-cell {
+  font-family: "Consolas", monospace;
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.grid-action-cell {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+/* ── Buttons ────────────────────────────────────── */
+igc-button[variant="contained"]::part(base) {
+  background: var(--sd-primary);
+  color: #fff;
+}
+
+.btn-danger::part(base) {
+  color: var(--sd-error);
+}
+
+/* ── Responsive ─────────────────────────────────── */
+@media (max-width: 1200px) {
+  .kpi-grid      { grid-template-columns: repeat(2, 1fr); }
+  .charts-row    { grid-template-columns: 1fr; }
+  .data-row      { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .kpi-grid      { grid-template-columns: 1fr 1fr; }
+  .page-scroll   { padding: 16px; }
+}
+
+
+code {
+    font-family: "Cascadia Mono", Consolas, monospace;
+}

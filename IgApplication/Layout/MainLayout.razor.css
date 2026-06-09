@@ -1,0 +1,5 @@
+/* MainLayout scoped styles */
+
+.nav-link svg {
+    fill: currentColor;
+}

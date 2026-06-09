@@ -1,0 +1,301 @@
+@inject TicketService TicketSvc
+@inject NotificationService Notifications
+
+<!-- ── Ticket Form Dialog ─────────────────────── -->
+<IgbDialog @ref="_dialog"
+           Title="@(_editTicket == null ? "Add Ticket" : "Edit Ticket")"
+           CloseOnOutsideClick="false"
+           KeepOpenOnEscape="false">
+
+    @if (_isLoading)
+    {
+        <div class="loading-overlay">
+            <IgbCircularProgress Indeterminate="true" style="--ig-size:var(--ig-size-small)" />
+            <span>Saving...</span>
+        </div>
+    }
+    else
+    {
+        <div class="form-grid">
+
+            <!-- Title -->
+            <div class="form-field form-full">
+                <IgbInput @bind-Value="_title"
+                          Label="Title"
+                          Placeholder="Brief description of the issue"
+                          Required="true" />
+                @if (_errors.TryGetValue("Title", out var te))
+                { <span class="field-error">@te</span> }
+            </div>
+
+            <!-- Customer -->
+            <div class="form-field">
+                <IgbInput @bind-Value="_customer"
+                          Label="Customer"
+                          Placeholder="Company or customer name"
+                          Required="true" />
+                @if (_errors.TryGetValue("Customer", out var ce))
+                { <span class="field-error">@ce</span> }
+            </div>
+
+            <!-- Assignee -->
+            <div class="form-field">
+                <label class="field-label">Assignee *</label>
+                <IgbSelect @ref="_assigneeSelect"
+                           Label="Assignee"
+                           Placeholder="Select assignee"
+                           Required="true">
+                    @foreach (var a in Assignees)
+                    {
+                        <IgbSelectItem Value="@a" Selected="@(_assignee == a)">@a</IgbSelectItem>
+                    }
+                </IgbSelect>
+                @if (_errors.TryGetValue("Assignee", out var ae))
+                { <span class="field-error">@ae</span> }
+            </div>
+
+            <!-- Priority -->
+            <div class="form-field">
+                <label class="field-label">Priority *</label>
+                <IgbSelect @ref="_prioritySelect"
+                           Label="Priority"
+                           Placeholder="Select priority"
+                           Required="true">
+                    @foreach (var p in Enum.GetValues<TicketPriority>())
+                    {
+                        <IgbSelectItem Value="@p.ToString()" Selected="@(_priority == p.ToString())">
+                            @GetPriorityLabel(p)
+                        </IgbSelectItem>
+                    }
+                </IgbSelect>
+                @if (_errors.TryGetValue("Priority", out var pe))
+                { <span class="field-error">@pe</span> }
+            </div>
+
+            <!-- Status -->
+            <div class="form-field">
+                <label class="field-label">Status *</label>
+                <IgbSelect @ref="_statusSelect"
+                           Label="Status"
+                           Placeholder="Select status"
+                           Required="true">
+                    @foreach (var s in Enum.GetValues<TicketStatus>())
+                    {
+                        <IgbSelectItem Value="@s.ToString()" Selected="@(_status == s.ToString())">
+                            @GetStatusLabel(s)
+                        </IgbSelectItem>
+                    }
+                </IgbSelect>
+                @if (_errors.TryGetValue("Status", out var se))
+                { <span class="field-error">@se</span> }
+            </div>
+
+            <!-- Created Date -->
+            <div class="form-field">
+                <label class="field-label">Created Date *</label>
+                <IgbDatePicker @ref="_createdPicker"
+                               Value="@_createdDate"
+                               InputFormat="MM/dd/yyyy"
+                               Required="true" />
+                @if (_errors.TryGetValue("CreatedDate", out var cd))
+                { <span class="field-error">@cd</span> }
+            </div>
+
+            <!-- Due Date -->
+            <div class="form-field">
+                <label class="field-label">Due Date *</label>
+                <IgbDatePicker @ref="_duePicker"
+                               Value="@_dueDate"
+                               InputFormat="MM/dd/yyyy"
+                               Required="true" />
+                @if (_errors.TryGetValue("DueDate", out var dd))
+                { <span class="field-error">@dd</span> }
+            </div>
+
+            <!-- Description -->
+            <div class="form-field form-full">
+                <IgbInput @bind-Value="_description"
+                          Label="Description"
+                          Placeholder="Additional details about the issue" />
+            </div>
+
+        </div>
+
+        @if (_errors.TryGetValue("_general", out var ge))
+        {
+            <div class="field-error" style="margin-top:8px">@ge</div>
+        }
+    }
+
+    <!-- Footer buttons -->
+    <IgbButton slot="footer" Variant="ButtonVariant.Flat" @onclick="Cancel">Cancel</IgbButton>
+    <IgbButton slot="footer" Variant="ButtonVariant.Contained" @onclick="SaveAsync">
+        @(_editTicket == null ? "Create Ticket" : "Save Changes")
+    </IgbButton>
+</IgbDialog>
+
+@code {
+    [Parameter] public EventCallback OnSaved { get; set; }
+
+    private IgbDialog _dialog = default!;
+    private IgbSelect _assigneeSelect = default!;
+    private IgbSelect _prioritySelect = default!;
+    private IgbSelect _statusSelect   = default!;
+    private IgbDatePicker _createdPicker = default!;
+    private IgbDatePicker _duePicker     = default!;
+
+    private Ticket? _editTicket;
+    private bool _isLoading;
+
+    // Backing fields
+    private string _title       = "";
+    private string _customer    = "";
+    private string _description = "";
+    private string _assignee    = Assignees[0];
+    private string _priority    = TicketPriority.Medium.ToString();
+    private string _status      = TicketStatus.New.ToString();
+    private DateTime _createdDate = DateTime.Today;
+    private DateTime _dueDate     = DateTime.Today.AddDays(7);
+
+    private Dictionary<string, string> _errors = new();
+
+    public static readonly string[] Assignees = {
+        "Alice Chen", "Bob Martinez", "Carol White", "David Kim", "Emma Johnson"
+    };
+
+    // ── Public API ───────────────────────────────
+    public async Task OpenForCreateAsync()
+    {
+        _editTicket   = null;
+        _title        = "";
+        _customer     = "";
+        _description  = "";
+        _assignee     = Assignees[0];
+        _priority     = TicketPriority.Medium.ToString();
+        _status       = TicketStatus.New.ToString();
+        _createdDate  = DateTime.Today;
+        _dueDate      = DateTime.Today.AddDays(7);
+        _errors.Clear();
+        await _dialog.ShowAsync();
+        StateHasChanged();
+    }
+
+    public async Task OpenForEditAsync(Ticket ticket)
+    {
+        _editTicket   = ticket;
+        _title        = ticket.Title;
+        _customer     = ticket.Customer;
+        _description  = ticket.Description ?? "";
+        _assignee     = ticket.Assignee;
+        _priority     = ticket.Priority.ToString();
+        _status       = ticket.Status.ToString();
+        _createdDate  = ticket.CreatedDate;
+        _dueDate      = ticket.DueDate;
+        _errors.Clear();
+        await _dialog.ShowAsync();
+        StateHasChanged();
+    }
+
+    // ── Actions ───────────────────────────────────
+    private async Task SaveAsync()
+    {
+        // Read select values from refs
+        var assignee = _assigneeSelect?.Value ?? _assignee;
+        var priority = _prioritySelect?.Value ?? _priority;
+        var status   = _statusSelect?.Value   ?? _status;
+        var created  = _createdPicker?.Value  ?? _createdDate;
+        var due      = _duePicker?.Value      ?? _dueDate;
+
+        // Validate
+        _errors.Clear();
+        if (string.IsNullOrWhiteSpace(_title))
+            _errors["Title"] = "Title is required.";
+        if (string.IsNullOrWhiteSpace(_customer))
+            _errors["Customer"] = "Customer is required.";
+        if (string.IsNullOrWhiteSpace(assignee))
+            _errors["Assignee"] = "Assignee is required.";
+        if (string.IsNullOrWhiteSpace(priority))
+            _errors["Priority"] = "Priority is required.";
+        if (string.IsNullOrWhiteSpace(status))
+            _errors["Status"] = "Status is required.";
+        if (created == default)
+            _errors["CreatedDate"] = "Created date is required.";
+        if (due == default)
+            _errors["DueDate"] = "Due date is required.";
+        else if (due.Date < created.Date)
+            _errors["DueDate"] = "Due date cannot be before created date.";
+
+        if (_errors.Count > 0)
+        {
+            StateHasChanged();
+            return;
+        }
+
+        _isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            // Simulate short async delay for polish
+            await Task.Delay(300);
+
+            var ticket = _editTicket?.Clone() ?? new Ticket();
+            ticket.Title       = _title.Trim();
+            ticket.Customer    = _customer.Trim();
+            ticket.Description = _description.Trim();
+            ticket.Assignee    = assignee;
+            ticket.Priority    = Enum.Parse<TicketPriority>(priority);
+            ticket.Status      = Enum.Parse<TicketStatus>(status);
+            ticket.CreatedDate = created;
+            ticket.DueDate     = due;
+
+            if (_editTicket == null)
+            {
+                await TicketSvc.AddTicketAsync(ticket);
+                Notifications.ShowSuccess("✅ Ticket created successfully.");
+            }
+            else
+            {
+                await TicketSvc.UpdateTicketAsync(ticket);
+                Notifications.ShowSuccess("✅ Ticket updated successfully.");
+            }
+
+            await _dialog.HideAsync();
+            await OnSaved.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            _errors["_general"] = $"Error saving ticket: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task Cancel()
+    {
+        await _dialog.HideAsync();
+    }
+
+    // ── Helpers ───────────────────────────────────
+    private static string GetPriorityLabel(TicketPriority p) => p switch
+    {
+        TicketPriority.Critical => "🔴 Critical",
+        TicketPriority.High     => "🟠 High",
+        TicketPriority.Medium   => "🟡 Medium",
+        TicketPriority.Low      => "🟢 Low",
+        _                       => p.ToString()
+    };
+
+    private static string GetStatusLabel(TicketStatus s) => s switch
+    {
+        TicketStatus.New        => "New",
+        TicketStatus.InProgress => "In Progress",
+        TicketStatus.Waiting    => "Waiting",
+        TicketStatus.Resolved   => "Resolved",
+        TicketStatus.Closed     => "Closed",
+        _                       => s.ToString()
+    };
+}

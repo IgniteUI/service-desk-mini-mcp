@@ -1,0 +1,58 @@
+/* TicketFormDialog scoped styles */
+
+igc-dialog::part(base) {
+    max-width: 640px;
+    width: 92vw;
+}
+
+igc-dialog::part(title) {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--sd-primary);
+    padding: 20px 24px 0;
+}
+
+igc-dialog::part(content) {
+    padding: 16px 24px;
+}
+
+igc-dialog::part(footer) {
+    padding: 12px 24px 20px;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.form-full {
+    grid-column: 1 / -1;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.field-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 2px;
+}
+
+.field-error {
+    font-size: 11px;
+    color: var(--sd-error);
+    margin-top: 3px;
+}
+
+igc-select,
+igc-date-picker,
+igc-input {
+    width: 100%;
+}

@@ -1,0 +1,57 @@
+/* Tickets page scoped styles */
+
+.filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.ticket-count-bar {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 8px;
+    padding: 0 2px;
+}
+
+/* View details dialog */
+.view-detail-grid {
+    display: grid;
+    gap: 10px;
+    padding: 4px 0;
+}
+
+.vd-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.vd-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    min-width: 90px;
+    flex-shrink: 0;
+    padding-top: 2px;
+}
+
+.vd-value {
+    font-size: 14px;
+    color: #1e293b;
+    flex: 1;
+}
+
+.vd-full {
+    flex-direction: column;
+    gap: 4px;
+}
+
+.overdue-text {
+    color: var(--sd-critical);
+    font-weight: 600;
+}
+
+igc-chip {
+    --ig-size: var(--ig-size-small);
+}

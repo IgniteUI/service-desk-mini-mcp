@@ -1,0 +1,312 @@
+@page "/"
+@inject TicketService TicketSvc
+@inject NavigationManager Nav
+
+<PageTitle>Dashboard – Service Desk Mini</PageTitle>
+
+@if (_isLoading)
+{
+    <div class="loading-overlay">
+        <IgbCircularProgress Indeterminate="true" />
+        <span>Loading dashboard...</span>
+    </div>
+}
+else
+{
+    <div class="page-header">
+        <h1>Dashboard</h1>
+        <p>Real-time overview of all support tickets.</p>
+    </div>
+
+    <!-- ── KPI Cards ────────────────────────────── -->
+    <div class="kpi-grid">
+        <div class="kpi-card" style="--kpi-color:#6366f1">
+            <span class="kpi-label">Total Tickets</span>
+            <span class="kpi-value">@_total</span>
+            <span class="kpi-sub">all time</span>
+            <span class="kpi-icon">🎫</span>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#0ea5e9">
+            <span class="kpi-label">Open Tickets</span>
+            <span class="kpi-value">@_open</span>
+            <span class="kpi-sub">active workload</span>
+            <span class="kpi-icon">📂</span>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#ea580c">
+            <span class="kpi-label">High Priority</span>
+            <span class="kpi-value">@_highPriority</span>
+            <span class="kpi-sub">critical + high</span>
+            <span class="kpi-icon">🔥</span>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#16a34a">
+            <span class="kpi-label">Resolved</span>
+            <span class="kpi-value">@_resolved</span>
+            <span class="kpi-sub">closed + resolved</span>
+            <span class="kpi-icon">✅</span>
+        </div>
+    </div>
+
+    <!-- ── Charts Row ───────────────────────────── -->
+    <div class="charts-row">
+
+        <!-- Tickets by Status – Column Chart -->
+        <div class="chart-card">
+            <h3>Tickets by Status</h3>
+            @if (_statusData.Count > 0)
+            {
+                <IgbCategoryChart DataSource="@_statusData"
+                                  ChartType="CategoryChartType.Column"
+                                  Height="220px"
+                                  Width="100%"
+                                  XAxisMemberPath="Label"
+                                  ExcludedProperties="@(new string[]{"Label"})"
+                                  Brushes="@_statusBrushes"
+                                  IsTransitionInEnabled="true"
+                                  IsHorizontalZoomEnabled="false"
+                                  IsVerticalZoomEnabled="false"
+                                  YAxisMinimumValue="0" />
+            }
+        </div>
+
+        <!-- Tickets by Priority – Pie Chart -->
+        <div class="chart-card">
+            <h3>Tickets by Priority</h3>
+            @if (_priorityData.Count > 0)
+            {
+                <IgbItemLegend @ref="_legend"
+                               Orientation="LegendOrientation.Horizontal"
+                               style="margin-bottom:8px" />
+                <IgbPieChart DataSource="@_priorityData"
+                             LabelMemberPath="Label"
+                             ValueMemberPath="Count"
+                             Width="100%"
+                             Height="190px"
+                             LegendLabelMemberPath="Label"
+                             Legend="@_legend"
+                             Brushes="@_priorityBrushes"
+                             IsTransitionInEnabled="true"
+                             LabelsPosition="LabelsPosition.BestFit" />
+            }
+        </div>
+    </div>
+
+    <!-- ── Bottom Row ───────────────────────────── -->
+    <div class="data-row">
+
+        <!-- Recent Tickets Grid -->
+        <div class="data-card">
+            <h3>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--sd-primary)">
+                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                </svg>
+                Recent Tickets
+            </h3>
+            @if (_recentTickets.Count == 0)
+            {
+                <div class="empty-state">
+                    <div class="empty-icon">📋</div>
+                    <p>No tickets yet. <a href="/tickets" style="color:var(--sd-accent)">Create one!</a></p>
+                </div>
+            }
+            else
+            {
+                <IgbGrid Data="@_recentTickets"
+                         PrimaryKey="Id"
+                         AutoGenerate="false"
+                         Width="100%"
+                         Height="600px"
+                         DisplayDensity="DisplayDensity.Compact">
+                    <IgbColumn Field="DisplayId" Header="ID" Width="90px" Sortable="false">
+                        <BodyTemplate>
+                            @{
+                                var c = (IgbCellTemplateContext)context;
+                            }
+                            <span class="ticket-id-cell">@c.Cell.Value</span>
+                        </BodyTemplate>
+                    </IgbColumn>
+                    <IgbColumn Field="Title" Header="Title" Sortable="true" />
+                    <IgbColumn Field="Customer" Header="Customer" Sortable="true" />
+                    <IgbColumn Field="PriorityName" Header="Priority" Sortable="true">
+                        <BodyTemplate>
+                            @{
+                                var c2 = (IgbCellTemplateContext)context;
+                                var pri = c2.Cell.Value?.ToString() ?? "";
+                            }
+                            <span class="badge @GetPriorityClass(pri)">@pri</span>
+                        </BodyTemplate>
+                    </IgbColumn>
+                    <IgbColumn Field="StatusName" Header="Status" Sortable="true">
+                        <BodyTemplate>
+                            @{
+                                var c3 = (IgbCellTemplateContext)context;
+                                var st = c3.Cell.Value?.ToString() ?? "";
+                            }
+                            <span class="badge @GetStatusClass(st)">@GetStatusLabel(st)</span>
+                        </BodyTemplate>
+                    </IgbColumn>
+                    <IgbColumn Field="DueDate" Header="Due" 
+                               DataType="GridColumnDataType.Date" Sortable="true" />
+                </IgbGrid>
+            }
+        </div>
+
+        <!-- Needs Attention -->
+        <div class="data-card">
+            <h3>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#ea580c">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                </svg>
+                Needs Attention
+            </h3>
+            @if (_attentionTickets.Count == 0)
+            {
+                <div class="empty-state" style="padding:24px 0">
+                    <div class="empty-icon">🎉</div>
+                    <p>No urgent tickets. Great work!</p>
+                </div>
+            }
+            else
+            {
+                <div class="attention-list">
+                    @foreach (var t in _attentionTickets)
+                    {
+                        <div class="attention-item @(t.Priority == TicketPriority.Critical ? "critical" : "")">
+                            <div>
+                                <span class="badge @GetPriorityClass(t.Priority.ToString())"
+                                      style="font-size:10px">
+                                    @t.Priority
+                                </span>
+                            </div>
+                            <div class="item-body">
+                                <div class="item-title">@t.Title</div>
+                                <div class="item-meta">
+                                    @t.Customer &nbsp;·&nbsp;
+                                    @if (t.IsOverdue)
+                                    { <span style="color:var(--sd-critical)">⚠ Overdue @(DateTime.Today - t.DueDate).Days d</span> }
+                                    else
+                                    { <span>Due @t.DueDate.ToString("MMM d")</span> }
+                                </div>
+                            </div>
+                            <IgbButton Variant="ButtonVariant.Flat"
+                                       style="--ig-size:var(--ig-size-small)"
+                                       @onclick='() => Nav.NavigateTo("/tickets")'>
+                                View
+                            </IgbButton>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private bool _isLoading = true;
+
+    // KPI values
+    private int _total, _open, _highPriority, _resolved;
+
+    // Chart data
+    private List<ChartPoint> _statusData   = new();
+    private List<ChartPoint> _priorityData = new();
+    private string _statusBrushes   = "#6366f1 #0ea5e9 #d97706 #16a34a #9ca3af";
+    private string _priorityBrushes = "#dc2626 #ea580c #d97706 #16a34a";
+
+    // Grid & attention data
+    private List<Ticket> _recentTickets    = new();
+    private List<Ticket> _attentionTickets = new();
+
+    // Pie chart legend ref
+    private IgbItemLegend? _legendRef;
+    private IgbItemLegend? _legend
+    {
+        get => _legendRef;
+        set { _legendRef = value; StateHasChanged(); }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        TicketSvc.OnChange += async () => await InvokeAsync(RefreshAsync);
+        await RefreshAsync();
+    }
+
+    private async Task RefreshAsync()
+    {
+        _isLoading = true;
+        StateHasChanged();
+
+        var tickets = await TicketSvc.GetTicketsAsync();
+
+        // KPIs
+        _total       = tickets.Count;
+        _open        = tickets.Count(t => t.Status is TicketStatus.New or TicketStatus.InProgress or TicketStatus.Waiting);
+        _highPriority = tickets.Count(t => t.Priority is TicketPriority.High or TicketPriority.Critical
+                                           && t.Status is not TicketStatus.Resolved and not TicketStatus.Closed);
+        _resolved    = tickets.Count(t => t.Status is TicketStatus.Resolved or TicketStatus.Closed);
+
+        // Chart – Status
+        _statusData = tickets
+            .GroupBy(t => t.Status)
+            .OrderBy(g => (int)g.Key)
+            .Select(g => new ChartPoint { Label = GetStatusLabel(g.Key.ToString()), Count = g.Count() })
+            .ToList();
+
+        // Chart – Priority
+        _priorityData = tickets
+            .GroupBy(t => t.Priority)
+            .OrderByDescending(g => (int)g.Key)
+            .Select(g => new ChartPoint { Label = g.Key.ToString(), Count = g.Count() })
+            .ToList();
+
+        // Recent tickets (last 8 by created date)
+        _recentTickets = tickets
+            .OrderByDescending(t => t.CreatedDate)
+            .Take(8)
+            .ToList();
+
+        // Needs attention: critical & non-closed, or overdue & non-closed
+        _attentionTickets = tickets
+            .Where(t => t.Status is not TicketStatus.Resolved and not TicketStatus.Closed)
+            .Where(t => t.Priority == TicketPriority.Critical || t.IsOverdue)
+            .OrderByDescending(t => t.Priority)
+            .ThenBy(t => t.DueDate)
+            .Take(6)
+            .ToList();
+
+        _isLoading = false;
+        StateHasChanged();
+    }
+
+    // ── Badge helpers ─────────────────────────────
+    private static string GetPriorityClass(string p) => p switch
+    {
+        "Critical" => "badge-critical",
+        "High"     => "badge-high",
+        "Medium"   => "badge-medium",
+        "Low"      => "badge-low",
+        _          => "badge-low"
+    };
+
+    private static string GetStatusClass(string s) => s switch
+    {
+        "New"        => "badge-new",
+        "InProgress" => "badge-inprogress",
+        "Waiting"    => "badge-waiting",
+        "Resolved"   => "badge-resolved",
+        "Closed"     => "badge-closed",
+        _            => "badge-new"
+    };
+
+    private static string GetStatusLabel(string s) => s switch
+    {
+        "InProgress" => "In Progress",
+        _            => s
+    };
+
+    // ── Inner type for chart data ─────────────────
+    private class ChartPoint
+    {
+        public string Label { get; set; } = "";
+        public int Count { get; set; }
+    }
+}

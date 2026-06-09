@@ -1,0 +1,15 @@
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found – Service Desk Mini</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <div class="empty-state">
+                <div class="empty-icon">🔍</div>
+                <p>The page you're looking for doesn't exist.</p>
+            </div>
+        </LayoutView>
+    </NotFound>
+</Router>

@@ -1,0 +1,5 @@
+/* Dashboard page scoped styles */
+
+.kpi-value {
+    color: var(--sd-primary);
+}

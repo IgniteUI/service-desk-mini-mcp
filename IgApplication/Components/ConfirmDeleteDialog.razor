@@ -1,0 +1,56 @@
+<!-- Confirm Delete Dialog -->
+<IgbDialog @ref="_dialog"
+           Title="Delete Ticket"
+           CloseOnOutsideClick="false">
+
+    <div style="padding:4px 0 12px">
+        <p style="margin:0 0 8px;color:#1e293b;font-size:14px">
+            Are you sure you want to delete this ticket?
+        </p>
+        @if (_ticket != null)
+        {
+            <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;padding:10px 14px;">
+                <strong style="font-size:13px;color:#7f1d1d">@_ticket.Title</strong>
+                <div style="font-size:12px;color:#991b1b;margin-top:2px">
+                    Customer: @_ticket.Customer &nbsp;·&nbsp; #@_ticket.DisplayId
+                </div>
+            </div>
+        }
+        <p style="margin:12px 0 0;font-size:12px;color:#64748b">
+            This action cannot be undone.
+        </p>
+    </div>
+
+    <IgbButton slot="footer" Variant="ButtonVariant.Flat" @onclick="Cancel">Cancel</IgbButton>
+    <IgbButton slot="footer" Variant="ButtonVariant.Contained"
+               class="btn-danger"
+               style="--ig-button-background:var(--sd-error);--ig-button-foreground:#fff"
+               @onclick="ConfirmAsync">
+        Delete Ticket
+    </IgbButton>
+</IgbDialog>
+
+@code {
+    [Parameter] public EventCallback<Ticket> OnConfirmed { get; set; }
+
+    private IgbDialog _dialog = default!;
+    private Ticket? _ticket;
+
+    public async Task OpenAsync(Ticket ticket)
+    {
+        _ticket = ticket;
+        await _dialog.ShowAsync();
+    }
+
+    private async Task ConfirmAsync()
+    {
+        await _dialog.HideAsync();
+        if (_ticket != null)
+            await OnConfirmed.InvokeAsync(_ticket);
+    }
+
+    private async Task Cancel()
+    {
+        await _dialog.HideAsync();
+    }
+}
